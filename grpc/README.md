@@ -6,9 +6,11 @@ pip install grpcio-tools
 ```
 
 # gRPC
+- 분산시스템에서 다른 머신의 서버 어플리케이션에 있는 메소드를 자신이 갖고 있는 것 처럼 호출할 수 있게 해주는 프레임워크
 - HTTP/2 기반으로 통신 
 - IDL로 google Protocol Buffers 사용
 - Server, Cilent 모두 sync, async 방식 제공
+- 다양한 언어와 플랫폼 지원
 
 
 ## RPC
@@ -27,13 +29,6 @@ pip install grpcio-tools
 - __Stream Priority__ : Request에 우선순위를 지정하여 중요한 Resource를 먼저 전달받을 수 있다.
 - 양방향 스트리밍이 가능해서 서버와 클라이언트가 서로 동시에 데이터를 스트리밍으로 주고 받을 수 있다. 
 - HTTP 보다 헤더 압축률이 더 높고 ProtoBuf로 메시지를 정의해서 메시지 크기가 크게 줄어들었다. 이로 인해 네트워크 트래픽이 줄어들고 성능이 높아졌다.
-
-  
-
-1. Define a service in a .proto file.
-2. Generate server and client code using the protocol buffer compiler.
-3. Use the Python gRPC API to write a simple client and server for your service.
-
 
 # Build Proto
 
@@ -101,16 +96,52 @@ rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
 - 두 stream은 독립적으로 동작하고, Server, Client는 원하는 순서대로 읽을 수 있다.
 - Server는 Client의 모든 메시지를 읽은 뒤 Response를 return 할 수도 있고, 번갈아 가며 한 message 씩 읽고 쓸 수도 있다. (각 stream 에서 message 순서는 보존된다)
 
-
 # Server-side
 
 - Service 인터페이스를 구현 
 - Client의 Request에 따라 Response를 리턴
 
+```py
+import grpc
+
+import greeter_pb2 as pb2
+import greeter_pb2_grpc as rpc
+```
+
+```py
+class GreeterServicer(rpc.GreeterServicer):
+    def Hello(self, request, context):
+        return pb2.Reply(message='Hello Response')
+```
+
+Servicer 인터페이스를 상속받아서 서비스를 구현한다.
+
+```py
+server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+rpc.add_GreeterServicer_to_server(GreeterServicer(), server)
+server.add_insecure_port('[::]:50051')
+server.start()
+```
+
+사용할 포트를 설정하고 `add_RouteGuideServicer_to_server` 함수를 이용해 구현한 서비스 `GreeterServicer` 를 `grpc.server`에 추가한다.
+
 # Client-side
 
 - Servicve 메소드 호출을 위해 Stub 생성
 
+```py
+with grpc.insecure_channel('localhost:50051') as channel:
+    stub = rpc.GreeterStub(channel)
+```
+
+GreeterStub 클래스를 인스턴스화 한다.
+
+```py
+request_data = pb2.Request(name="yoo")
+response = stub.Hello(request_data)
+```
+
+서비스의 메서드를 호출하고 Server로 부터 오는 response를 리턴받는다.
 
 # Reference
 - https://grpc.io/docs/tutorials/basic/python/
