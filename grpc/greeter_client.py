@@ -1,7 +1,7 @@
 import grpc
 
-import greeter_pb2 as pb2
-import greeter_pb2_grpc as rpc
+from protos import greeter_pb2 as pb2
+from protos import greeter_pb2_grpc as rpc
 
 
 if __name__ == '__main__':    
