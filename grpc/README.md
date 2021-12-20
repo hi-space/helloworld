@@ -149,3 +149,7 @@ response = stub.Hello(request_data)
 - https://developers.google.com/protocol-buffers/docs/pythontutorial
 - https://medium.com/@goinhacker/microservices-with-grpc-d504133d191d
 
+### Codes
+
+- [Python](https://grpc.io/docs/languages/python/basics/)
+- [Go](https://github.com/grpc/grpc-go/blob/master/examples/route_guide/server/server.go)
